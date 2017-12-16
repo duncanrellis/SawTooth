@@ -2,25 +2,36 @@
 % Please edit documentation in R/inventoryPlot.R
 \name{ppvDecom}
 \alias{ppvDecom}
-\title{Takes as input PPV parmeters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}}
+\title{Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
+Sets ROP to provide a zero safety level cycle
+PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
+of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)}
 \usage{
-ppvDecom(Dmd, SRR, CR, PCLT, PRTAT)
+ppvDecom(Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2, Repair_period = 1)
 }
 \arguments{
-\item{Dmd}{numeric, quarterly demand forecast}
+\item{Demand}{numeric, quarterly demand forecast}
 
-\item{CR}{numeric, proportion of items that are returned for repair}
+\item{CRR}{numeric, proportion of items that are returned for repair}
+
+\item{SR}{numeric, proportion of items that are successfully repaired}
 
 \item{PCLT}{numeric, production lead time in quarters}
 
 \item{PRTAT}{numeric, process repair turn around time in quarters}
 
-\item{SR}{numeric, proportion of items that are successful repaired}
+\item{Cov_Dur}{numeric, number of quarters of material to buy}
+
+\item{Repair_period}{number, number of quarters of material to repair}
+
+\item{CR}{numeric, proportion of items that are returned for repair}
 }
 \value{
 data.frame
 }
 \description{
+Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
+Sets ROP to provide a zero safety level cycle
 PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
 of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)
 }

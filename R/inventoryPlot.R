@@ -13,31 +13,57 @@ if (FALSE) {
   plotST(paramDb)
 
   plotST(ROP = 4, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE, lSize = 1, axis_text = 12)
+
+  Demand = 4; CRR = .7; SR = .8; PCLT = 3; PRTAT = 1.5
+  plotST(ppvDecom(Demand = Demand, CRR = CRR, SR = SR, PCLT = PCLT, PRTAT = PRTAT))
 }
 
-estimateFR <- function() {
+##' Using approach in Silver, et. al, estimate fill rate of CR system
+##'
+##' @param paramDb data.frame containing Demand, LT, EOQ, ROP
+##' @export
+estimateFR <- function(paramDb) {
+
+  return (NULL)
 
 }
-#' Takes as input PPV parmeters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
-#'
+
+#' Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
+#' Sets ROP to provide a zero safety level cycle
 #' PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
 #' of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)
-#' @param Dmd numeric, quarterly demand forecast
-#' @param SR numeric, proportion of items that are successful repaired
-#' @param CR numeric, proportion of items that are returned for repair
+#' @param Demand numeric, quarterly demand forecast
+#' @param CRR numeric, proportion of items that are returned for repair
+#' @param SR numeric, proportion of items that are successfully repaired
 #' @param PCLT numeric, production lead time in quarters
 #' @param PRTAT numeric, process repair turn around time in quarters
 #'
+#' @param Cov_Dur numeric, number of quarters of material to buy
+#' @param Repair_period number, number of quarters of material to repair
+#' @param CR numeric, proportion of items that are returned for repair
 #' @return data.frame
 #' @export
 #'
-ppvDecom <- function(Dmd, SRR, CR, PCLT, PRTAT) {
+ppvDecom <- function(Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2, Repair_period = 1) {
 
-  if (!between(SRR, 0, 1) || !between(SRR, 0, 1) ||
-      !Dmd > 0 || !PCLT > 0 || !PRTAT > 0) error("SRR and CR must be [0,1] and all other parameters >= 0")
+  if (!between(CRR, 0, 1) || !between(SR, 0, 1) ||
+        !Demand > 0 || !PCLT > 0 || !PRTAT > 0) {
+    error("CRR and SR must be [0,1] and all other parameters >= 0")
+  }
 
-  ppv <- Dmd * (1 - SRR * SR) * PCLT + Dmd * (SRR * SR) * PRTAT
+  regenD <- Demand * CRR * SR
+  attrD <- Demand * (1 - CRR * SR)
 
+  paramDb <- tibble(
+    Title = c("PPV", "Regen", "Attrition"),
+    Dmd = c(Demand, regenD, attrD),
+    LT = c(CRR * SR * PRTAT + (1 - CRR * SR) * PCLT, PRTAT, PCLT),
+    EOQ = c(regenD * Repair_period + attrD * Cov_Dur, regenD * Repair_period, attrD * Cov_Dur)
+    )
+  LTD_prime <- (paramDb$Dmd * paramDb$LT) / (pmax(1, (paramDb$Dmd * paramDb$LT)/paramDb$EOQ))
+  paramDb$ROP <- LTD_prime
+
+  return (paramDb)
 }
 
 #' Produces a saw tooth continuous review inventory plot with user supplied parameters
@@ -83,7 +109,7 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   if ("axis_text" %in% names(dots)) plotParams$axis_text <- dots$axis_text
 
   if (is.data.frame(ROP)) {
-    paramsDb <- ROP
+    paramDb <- ROP
   } else {
   # Some data checks, build the paramsDb if not supplied
     params <- list(ROP, EOQ, Dmd, LT)
@@ -107,7 +133,7 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   }
   # Calculate some additional plot parameters
   paramDb$LTD <- paramDb$Dmd * paramDb$LT
-  cycleTime <- max(1, paramDb$LTD / paramDb$EOQ)
+  cycleTime <- pmax(1, paramDb$LTD / paramDb$EOQ)
   paramDb$LTD_prime <- paramDb$LTD / cycleTime
   paramDb$maxPoint <- paramDb$ROP - paramDb$LTD_prime + paramDb$EOQ # Stock position right after resupply
   paramDb$minPoint <- paramDb$ROP - paramDb$LTD_prime # Stock position right before resupply
@@ -194,9 +220,9 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   # add the rest of the elements
   lineCols <- c("dark red", "dark blue")
   names(lineCols) <- c("SL", "ROP")
-  hlineData <- tibble(y = c(paramDb$SL, paramDb$ROP),
-                      Type = rep(c("SL", "ROP"), nrow(paramDb)),
-                      Title = rep(unique(pltDb$Title), each = 2))
+  hlineData <- select(paramDb, Title, ROP, SL) %>%
+    tidyr::gather(., "Type", "y", -Title)
+
   plt <-
     plt +
     geom_hline(data = hlineData, aes(yintercept = y, color = Type, linetype = Title),
