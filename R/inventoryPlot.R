@@ -1,11 +1,5 @@
 if (FALSE) {
 
-  devtools::document("~/Projects/WSSInventory")
-  devtools::install("~/Projects/WSSInventory")
-  devtools::build("~/Projects/WSSInventory")
-  library(WSSInventory)
-  devtools::load_all("~/Projects/WSSInventory")
-
   plotST(ROP = 4, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE)
   plotST(ROP = c(2,3,4), EOQ = c(1,2,3), Dmd = c(2,2,2), LT = 2, plotLTs = TRUE)
   plotST(ROP = 4, EOQ = 1.5, Dmd = 1, LT = 2, xMax = 10, plotLTs = TRUE)
@@ -19,7 +13,6 @@ if (FALSE) {
   plotST(paramDb)
 
   plotST(ROP = 4, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE, lSize = 1, axis_text = 12)
-
 }
 
 estimateFR <- function() {
@@ -55,14 +48,12 @@ ppvDecom <- function(Dmd, SRR, CR, PCLT, PRTAT) {
 #' @param xMax if provided provide explicit maximum for x-axis
 #' @param plotLTs if TRUE provide LT information
 #' @param ... additional parameters, for plot output
-#' @param plotly_output logical, if TRUE, produce plotly plot
 #' @param catNames names for each sawtooth
 #'
-#' @return gg or plotly obj
+#' @return gg
 #' @export
 #' @import ggplot2
 #' @import dplyr
-#' @import plotly
 #' @importFrom scales comma
 #' @examples
 #' \dontrun{
@@ -81,7 +72,7 @@ ppvDecom <- function(Dmd, SRR, CR, PCLT, PRTAT) {
 #' }
 #'
 plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNames = NULL,
-                   xMax = NULL, plotLTs = FALSE, plotly_output = FALSE, ...) {
+                   xMax = NULL, plotLTs = FALSE, ...) {
 
   plotParams <- list(
     lSize = 1,
@@ -247,8 +238,6 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   plt <- plt +
     labs(title = "Inventory Saw Tooth",
          subtitle = subTitle)
-
-  if (plotly_output) plt <- ggplotly(plt)
 
   # Return in attributes some information about parameters
   attr(plt, "plot_data") <- pltDb

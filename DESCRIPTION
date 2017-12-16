@@ -1,0 +1,15 @@
+Package: SawTooth
+Type: Package
+Title: Saw Tooth Inventory Generation Toolset
+Description: Tools for visualizing continuous review inventory systems
+Version: 0.1.0
+Maintainer: Duncan Ellis <duncanrellis@gmail.com>
+Author: person('Duncan', 'Ellis',
+    email='duncanrellis@gmail.com', role = c('aut','cre'))
+Imports:
+    dplyr,
+    ggplot2,
+License: GPL
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1

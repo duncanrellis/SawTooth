@@ -5,8 +5,7 @@
 \title{Produces a saw tooth continuous review inventory plot with user supplied parameters}
 \usage{
 plotST(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2,
-  catNames = NULL, xMax = NULL, plotLTs = FALSE, plotly_output = FALSE,
-  ...)
+  catNames = NULL, xMax = NULL, plotLTs = FALSE, ...)
 }
 \arguments{
 \item{ROP}{Item Reorder Point or data.frame containing (ROP, EOQ, Dmd, LT, and catNames)}
@@ -21,12 +20,10 @@ plotST(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2,
 
 \item{plotLTs}{if TRUE provide LT information}
 
-\item{plotly_output}{logical, if TRUE, produce plotly plot}
-
 \item{...}{additional parameters, for plot output}
 }
 \value{
-gg or plotly obj
+gg
 }
 \description{
 Produces a saw tooth continuous review inventory plot with user supplied parameters
@@ -40,7 +37,7 @@ plotST(ROP = 4, EOQ = 4, Dmd = 1, LT = 2, cycleLimits = 2, plotLTs = TRUE)
 
 paramDb <- data.frame(ROP = c(2,3,4),
                       EOQ = c(1,2,3),
-                      Dmd = c(2,2,2),
+                      Dmd = c(4,2.5,2.2),
                       LT =  c(1,1,1),
                       Title = paste("Item", 1:3, sep = " "))
 plotST(paramDb)
