@@ -1,6 +1,9 @@
 if (FALSE) {
 
-  plotST(ROP = 4, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE)
+  ## TODO
+  ## Extend to probably handle negative stock positions
+
+  plotST(ROP = 2, EOQ = 1, Dmd = 4, LT = 1, plotLTs = TRUE)
   plotST(ROP = c(2,3,4), EOQ = c(1,2,3), Dmd = c(2,2,2), LT = 2, plotLTs = TRUE)
   plotST(ROP = 4, EOQ = 1.5, Dmd = 1, LT = 2, xMax = 10, plotLTs = TRUE)
   plotST(ROP = 4, EOQ = 4, Dmd = 1, LT = 2, cycleLimits = 2, plotLTs = TRUE)
@@ -146,7 +149,8 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   } else {
     xlims <- c(0, xMax)
   }
-  ylims <- range(c(0, paramDb$ROP - paramDb$LTD_prime + paramDb$EOQ) * 1.1)
+  ylims <- range(c(min(paramDb$minPoint),
+                   (paramDb$ROP - paramDb$LTD_prime + paramDb$EOQ) * 1.1))
 
   pltDb <- paramDb %>%
     group_by(Title) %>%
@@ -195,7 +199,7 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
         if (.$x1[1] == .$x2[1]) {
           # resupply
           ret <- data.frame(
-                     xstart = .$x1 - paramDb$LTD[1],
+                     xstart = .$x1 - paramDb$LT[1],
                      xend = .$x1)
         } else {
           ret <- data.frame(xstart = NA, xend = NA)
@@ -225,6 +229,7 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
 
   plt <-
     plt +
+    geom_hline(yintercept = 0, color = "black") +
     geom_hline(data = hlineData, aes(yintercept = y, color = Type, linetype = Title),
                lwd = plotParams$lSize) +
     geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2, linetype = Title),
@@ -235,6 +240,9 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
       axis.text.y = element_text(size = plotParams$axis_text),
       axis.title.x = element_text(size = plotParams$axis_text),
       axis.title.y = element_text(size = plotParams$axis_text),
+      plot.title = element_text(size = plotParams$axis_text),
+      plot.subtitle = element_text(size = round(.8 * plotParams$axis_text, 0)),
+      legend.text = element_text(size = round(.8 *plotParams$axis_text, 0)),
       legend.title = element_blank(),
       legend.position = "bottom"
     ) +
