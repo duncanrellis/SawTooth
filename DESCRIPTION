@@ -7,8 +7,8 @@ Maintainer: Duncan Ellis <duncanrellis@gmail.com>
 Author: person('Duncan', 'Ellis',
     email='duncanrellis@gmail.com', role = c('aut','cre'))
 Imports:
-    dplyr,
-    ggplot2,
+    dplyr (>= 0.5),
+    ggplot (>= 2.0.0),
 License: GPL
 Encoding: UTF-8
 LazyData: true
