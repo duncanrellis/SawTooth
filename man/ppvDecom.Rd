@@ -2,7 +2,7 @@
 % Please edit documentation in R/inventoryPlot.R
 \name{ppvDecom}
 \alias{ppvDecom}
-\title{Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
+\title{Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \code{\link{plotST}}
 Sets ROP to provide a zero safety level cycle
 PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
 of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)}
@@ -30,7 +30,7 @@ ppvDecom(Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2, Repair_period = 1)
 data.frame
 }
 \description{
-Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \link{\code{plotST}}
+Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \code{\link{plotST}}
 Sets ROP to provide a zero safety level cycle
 PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
 of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)
