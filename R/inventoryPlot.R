@@ -1,7 +1,5 @@
 if (FALSE) {
 
-  ## TODO
-  
   plotST(ROP = 2, EOQ = 1, Dmd = 4, LT = 1, plotLTs = TRUE)
   plotST(ROP = c(2,3,4), EOQ = c(1,2,3), Dmd = c(2,2,2), LT = 2, plotLTs = TRUE)
   plotST(ROP = 4, EOQ = 1.5, Dmd = 1, LT = 2, xMax = 10, plotLTs = TRUE)
