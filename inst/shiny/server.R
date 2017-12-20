@@ -192,6 +192,14 @@ shinyServer(function(input, output, session) {
     numericInput("enterPPV_PRTAT", label = "Process Repair Turnaround Time",
                  min = 0, max = NA, step = NA, value = 1.5)
   })
+  output$PPV_Cov_Dur<- renderUI({
+    numericInput("enterPPV_Cov_Dur", label = "Procurement Coverage Duration",
+                 min = 0, max = NA, step = NA, value = 2)
+  })
+  output$PPV_Repair_period <- renderUI({
+    numericInput("enterPPV_Repair_period", label = "Repair Period",
+                 min = 0, max = NA, step = NA, value = 1)
+  })
 
   ## Put up the inventory plot
   output$plotSawTooth <- renderPlot({
@@ -207,7 +215,9 @@ shinyServer(function(input, output, session) {
           CRR = input$enterPPV_CRR,
           SR = input$enterPPV_SR,
           PCLT = input$enterPPV_PCLT,
-          PRTAT = input$enterPPV_PRTAT),
+          PRTAT = input$enterPPV_PRTAT,
+          Cov_Dur = input$enterPPV_Cov_Dur,
+          Repair_period = input$enterPPV_Repair_period),
           axis_text = textSize)
       }
     }

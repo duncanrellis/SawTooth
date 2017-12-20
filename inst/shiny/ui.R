@@ -55,7 +55,9 @@ dashboardPage(
             uiOutput("PPV_CRR"),
             uiOutput("PPV_SR"),
             uiOutput("PPV_PCLT"),
-            uiOutput("PPV_PRTAT")
+            uiOutput("PPV_Cov_Dur"),
+            uiOutput("PPV_PRTAT"),
+            uiOutput("PPV_Repair_period")
           )
         )
         )

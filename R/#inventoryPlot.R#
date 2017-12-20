@@ -198,26 +198,26 @@ plotST <- function(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catN
   Dmd <- 100
 
   slope = -100
-
-
+  
+  
   pltDb <- paramDb %>%
     group_by(Title) %>%
     do({
 
       ## Work out all the y points, and then figure the times between them
-
+      
       time <- 0
       browser()
-      start <- .$ROP - .$LTD_prime +
+      start <- .$ROP - .$LTD_prime + 
       browser()
     })
-
+  
       time <- 0
       start <- .$
-      next_order_arrival
+      next_order_arrival 
 
 
-
+      
       si_prime <- .$ROP - (.$cycleTime - 1) * .$EOQ # stock on hand at start of cycle
       first_tstep <- (start - si_prime)/.$Dmd ## To first resupply
       lineSegs <- tibble(x1 = 0, y1 = .$ROP, x2 = first_tstep, y2 = si_prime)
