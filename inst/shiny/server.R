@@ -1,4 +1,5 @@
 library(dplyr)
+library(scales)
 library(shiny)
 library(shinydashboard)
 library(SawTooth)
@@ -14,14 +15,89 @@ shinyServer(function(input, output, session) {
     plotList = list()
   )
 
+  observe({
+    if (length(values$plotList) > 0 && input$enterFR1Sigma > 0){
+      paramDb <- values$plotList$plotData1
+      paramDb$LTD_sigma <- input$enterFR1Sigma
+      fillRate <-
+        scales::percent(round(estimateFR(paramDb)$FR, 4))
+    } else {
+      fillRate <- "Enter a Positive Standard Deviation"
+    }
+    values$FR1fillRate <- fillRate
+  })
+  observe({
+    if (length(values$plotList) > 0 && input$enterFR2Sigma > 0){
+      paramDb <- values$plotList$plotData2
+      paramDb$LTD_sigma <- input$enterFR2Sigma
+      fillRate <-
+        scales::percent(round(estimateFR(paramDb)$FR, 4))
+    } else {
+      fillRate <- "Enter a Positive Standard Deviation"
+    }
+    values$FR2fillRate <- fillRate
+  })
+  observe({
+    if (length(values$plotList) > 0 && input$enterFR3Sigma > 0){
+      paramDb <- values$plotList$plotData3
+      paramDb$LTD_sigma <- input$enterFR3Sigma
+      fillRate <-
+        scales::percent(round(estimateFR(paramDb)$FR, 4))
+    } else {
+      fillRate <- "Enter a Positive Standard Deviation"
+    }
+    values$FR3fillRate <- fillRate
+  })
+  observe({
+      if (length(values$plotList) > 0 && input$enterPPVSigma > 0) {
+        paramDb <- ppvDecom(
+          SL = input$enterPPV_SL,
+          Demand = input$enterPPV_Demand,
+          CRR = input$enterPPV_CRR,
+          SR = input$enterPPV_SR,
+          PCLT = input$enterPPV_PCLT,
+          PRTAT = input$enterPPV_PRTAT,
+          Cov_Dur = input$enterPPV_Cov_Dur,
+          Repair_period = input$enterPPV_Repair_period) %>%
+          mutate(LTD_sigma = input$enterPPVSigma) %>%
+          filter(Title == "PPV")
+        fillRate <-
+          scales::percent(round(estimateFR(paramDb)$FR, 4))
+      } else {
+        fillRate <- "Enter a Positive Standard Deviation"
+      }
+      values$PPVfillRate <- fillRate
+  })
+
+  ## Store the fill-rate values
+  output$PPVFR <- renderText({
+    paste(values$PPVfillRate)
+  })
+  output$FR1 <- renderText({
+    paste(values$FR1fillRate)
+  })
+  output$FR2 <- renderText({
+    paste(values$FR2fillRate)
+  })
+  output$FR3 <- renderText({
+    paste(values$FR3fillRate)
+  })
+
   ## PPV Mode or standard
   observe({
     if (input$enterPPV) {
       shinyjs::show(id = "PPV")
+      shinyjs::show(id = "PPV2")
       shinyjs::hide(id = "standard")
       shinyjs::hide(id = "displayPlotNumber")
+      if (input$calcFR) {
+        shinyjs::show(id = "PPVFR")
+      } else {
+        shinyjs::hide(id = "PPVFR")
+      }
     } else {
       shinyjs::hide(id = "PPV")
+      shinyjs::hide(id = "PPV2")
       shinyjs::show(id = "standard")
       shinyjs::show(id = "displayPlotNumber")
     }
@@ -35,13 +111,31 @@ shinyServer(function(input, output, session) {
         shinyjs::show(id = "LTHide")
         values$plotList$plotData2 <- NULL
         values$plotList$plotData3 <- NULL
+        if (input$calcFR) {
+          shinyjs::show(id = "FR1")
+          shinyjs::hide(id = "FR2")
+          shinyjs::hide(id = "FR3")
+        } else {
+          shinyjs::hide(id = "FR1")
+          shinyjs::hide(id = "FR2")
+          shinyjs::hide(id = "FR3")
+        }
       } else if (input$enterPlotNumber == 2) {
         shinyjs::show(id = "plot2Box")
         shinyjs::hide(id = "plot3Box")
         shinyjs::hide(id = "LTHide")
+        if (input$calcFR) {
+          shinyjs::show(id = "FR1")
+          shinyjs::show(id = "FR2")
+          shinyjs::hide(id = "FR3")
+        } else {
+          shinyjs::hide(id = "FR1")
+          shinyjs::hide(id = "FR2")
+          shinyjs::hide(id = "FR3")
+        }
         values$plotList$plotData3 <- NULL
         isolate({
-          values$plotList$plotData2 <- data.frame(ROP = input$enterROP2,
+          values$plotList$plotData2 <- data.frame(SL = input$enterSL2,
                                                   EOQ = input$enterEOQ2,
                                                   Dmd = input$enterDmd2,
                                                   LT =  input$enterLT2,
@@ -51,9 +145,18 @@ shinyServer(function(input, output, session) {
         shinyjs::show(id = "plot2Box")
         shinyjs::show(id = "plot3Box")
         shinyjs::hide(id = "LTHide")
+        if (input$calcFR) {
+          shinyjs::show(id = "FR1")
+          shinyjs::show(id = "FR2")
+          shinyjs::show(id = "FR3")
+        } else {
+          shinyjs::hide(id = "FR1")
+          shinyjs::hide(id = "FR2")
+          shinyjs::hide(id = "FR3")
+        }
         isolate({
-          if (!is.null(input$enterROP2)) {
-            values$plotList$plotData2 <- data.frame(ROP = input$enterROP2,
+          if (!is.null(input$enterSL2)) {
+            values$plotList$plotData2 <- data.frame(SL = input$enterSL2,
                                                     EOQ = input$enterEOQ2,
                                                     Dmd = input$enterDmd2,
                                                     LT =  input$enterLT2,
@@ -61,8 +164,8 @@ shinyServer(function(input, output, session) {
           }
         })
         isolate({
-          if (!is.null(input$enterROP3)) {
-            values$plotList$plotData3 <- data.frame(ROP = input$enterROP3,
+          if (!is.null(input$enterSL3)) {
+            values$plotList$plotData3 <- data.frame(SL = input$enterSL3,
                                                     EOQ = input$enterEOQ3,
                                                     Dmd = input$enterDmd3,
                                                     LT =  input$enterLT3,
@@ -74,13 +177,13 @@ shinyServer(function(input, output, session) {
 
   ## Observers for reactive values, update plotList
   observeEvent({
-    input$enterROP1
+    input$enterSL1
     input$enterEOQ1
     input$enterDmd1
     input$enterLT1
   },
   isolate({
-    values$plotList$plotData1 <- data.frame(ROP = input$enterROP1,
+    values$plotList$plotData1 <- data.frame(SL = input$enterSL1,
                                   EOQ = input$enterEOQ1,
                                   Dmd = input$enterDmd1,
                                   LT =  input$enterLT1,
@@ -88,13 +191,13 @@ shinyServer(function(input, output, session) {
   })
   )
   observeEvent({
-    input$enterROP2
+    input$enterSL2
     input$enterEOQ2
     input$enterDmd2
     input$enterLT2
   },
   isolate({
-    values$plotList$plotData2 <- data.frame(ROP = input$enterROP2,
+    values$plotList$plotData2 <- data.frame(SL = input$enterSL2,
                                   EOQ = input$enterEOQ2,
                                   Dmd = input$enterDmd2,
                                   LT =  input$enterLT2,
@@ -102,13 +205,13 @@ shinyServer(function(input, output, session) {
   })
   )
   observeEvent({
-    input$enterROP3
+    input$enterSL3
     input$enterEOQ3
     input$enterDmd3
     input$enterLT3
   },
   isolate({
-    values$plotList$plotData3 <- data.frame(ROP = input$enterROP3,
+    values$plotList$plotData3 <- data.frame(SL = input$enterSL3,
                                   EOQ = input$enterEOQ3,
                                   Dmd = input$enterDmd3,
                                   LT =  input$enterLT3,
@@ -117,8 +220,8 @@ shinyServer(function(input, output, session) {
   )
 
   ## Layout Parameters (Standard)
-  output$ROP1 <- renderUI({
-    numericInput("enterROP1", label = "Reorder Point",
+  output$SL1 <- renderUI({
+    numericInput("enterSL1", label = "Safety Level",
                  min = 0, max = NA, step = NA, value = 2)
   })
   output$EOQ1 <- renderUI({
@@ -137,8 +240,8 @@ shinyServer(function(input, output, session) {
     checkboxInput("plotLT", label = "Show Lead Times", value = TRUE)
   })
   ## Inventory ST 2
-  output$ROP2 <- renderUI({
-    numericInput("enterROP2", label = "Reorder Point",
+  output$SL2 <- renderUI({
+    numericInput("enterSL2", label = "Safety Level",
                  min = 0, max = NA, step = NA, value = 3)
   })
   output$EOQ2 <- renderUI({
@@ -154,8 +257,8 @@ shinyServer(function(input, output, session) {
                  min = 0, max = NA, step = NA, value = 1)
   })
   ## Inventory ST 3
-  output$ROP3 <- renderUI({
-    numericInput("enterROP3", label = "Reorder Point",
+  output$SL3 <- renderUI({
+    numericInput("enterSL3", label = "Safety Level",
                  min = 0, max = NA, step = NA, value = 4)
   })
   output$EOQ3 <- renderUI({
@@ -172,6 +275,10 @@ shinyServer(function(input, output, session) {
   })
 
   ## LayoutParameters PPV
+  output$PPV_SL <- renderUI({
+    numericInput("enterPPV_SL", label = "Safety Level",
+                 min = 0, max = NA, step = NA, value = 0)
+  })
   output$PPV_Demand <- renderUI({
     numericInput("enterPPV_Demand", label = "Demand (per unit time)",
                  min = 0, max = NA, step = NA, value = 4)
@@ -206,11 +313,12 @@ shinyServer(function(input, output, session) {
     if (length(values$plotList) > 0) {
       if (!input$enterPPV) {
         pltData <- suppressWarnings(do.call("bind_rows", values$plotList))
-        plotST(ROP = pltData,
+        plotST(SL = pltData,
                plotLTs = input$plotLT,
                axis_text = textSize)
       } else {
         plotST(ppvDecom(
+          SL = input$enterPPV_SL,
           Demand = input$enterPPV_Demand,
           CRR = input$enterPPV_CRR,
           SR = input$enterPPV_SR,

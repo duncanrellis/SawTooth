@@ -2,13 +2,23 @@
 % Please edit documentation in R/inventoryPlot.R
 \name{estimateFR}
 \alias{estimateFR}
-\title{Using approach in Silver, et. al, estimate fill rate of CR system}
+\title{Using approach in Silver, et all, estimate fill rate of CR system
+\eqn{1-f =  \frac{1}{Q} \int_{s^{'}}^{\infty} (x - s^{'}) f_{X^{'}}  {dx}}}
 \usage{
-estimateFR(paramDb)
+estimateFR(SL, EOQ, Dmd, LT, ...)
 }
 \arguments{
-\item{paramDb}{data.frame containing Demand, LT, EOQ, ROP}
+\item{SL}{either data.frame containing SL, EOQ, Dmd, LT, and variance measure, or numeric SL minimum}
+
+\item{EOQ}{numeric, er quantity}
+
+\item{Dmd}{numeric, quarterly demand forecast}
+
+\item{LT}{numeric, lead time}
+
+\item{...}{numeric, additional variance params for LT and Dmd.  Either LTD_sigma or both LT_sigma and Dmd_sigma must be supplied.}
 }
 \description{
-Using approach in Silver, et. al, estimate fill rate of CR system
+Using approach in Silver, et all, estimate fill rate of CR system
+\eqn{1-f =  \frac{1}{Q} \int_{s^{'}}^{\infty} (x - s^{'}) f_{X^{'}}  {dx}}
 }

@@ -4,13 +4,18 @@
 \alias{plotST}
 \title{Produces a saw tooth continuous review inventory plot with user supplied parameters}
 \usage{
-plotST(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2,
-  catNames = NULL, xMax = NULL, plotLTs = FALSE, ...)
+plotST(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2,
+  catNames = NULL, xMax = NULL, plotLTs = FALSE, FR = TRUE, ...)
 }
 \arguments{
-\item{ROP}{Item Reorder Point or data.frame containing (ROP, EOQ, Dmd, LT, and catNames)}
+\item{SL}{numeric, planned minimum safety level to honor or data.frame with at minimum
+EOQ, Sl, Dmd, and LT}
 
 \item{EOQ}{Item Order Quantity}
+
+\item{Dmd}{numeric, demand per unit time}
+
+\item{LT}{numeric, lead time}
 
 \item{cycleLimits}{how many saw tooth cycles to draw}
 
@@ -19,6 +24,8 @@ plotST(ROP, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2,
 \item{xMax}{if provided provide explicit maximum for x-axis}
 
 \item{plotLTs}{if TRUE provide LT information}
+
+\item{FR}{logical, if TRUE, estimate Fill Rate}
 
 \item{...}{additional parameters, for plot output}
 }

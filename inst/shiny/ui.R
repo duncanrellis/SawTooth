@@ -11,19 +11,34 @@ dashboardPage(
                     min = 1, max = 3, value = 3, step = 1)
         ),
     checkboxInput("enterPPV", label = "Enable PPV Mode",
-                  value = FALSE)
+                  value = FALSE),
+    checkboxInput("calcFR", label = "Estimate Fill-Rate",
+                  value = TRUE)
     ),
   dashboardBody(
     fluidRow(
-      box(
+      box(width = 10,
           plotOutput("plotSawTooth")
-      )
+      ),
+      div(id = "PPV",
+          div(id = "PPVFR",
+            fluidRow(
+              box(
+                title = "Fill Rate Projection", width = 2,
+                numericInput("enterPPVSigma", label = "Lead Time Demand Standard Deviation",
+                             min = 0, max = Inf, step = NA, value = 0),
+                h3("Fill Rate Estimate"),
+                textOutput("PPVFR")
+              )
+            )
+            )
+          )
     ),
     div(id = "standard",
         fluidRow(
           box(
             title = "Plot 1 Parameters", width = 4,
-            uiOutput("ROP1"),
+            uiOutput("SL1"),
             uiOutput("EOQ1"),
             uiOutput("Dmd1"),
             uiOutput("LT1"),
@@ -31,7 +46,7 @@ dashboardPage(
           ),
           div(id = "plot2Box",
               box(title = "Plot 2 Parameters", width = 4,
-                  uiOutput("ROP2"),
+                  uiOutput("SL2"),
                   uiOutput("EOQ2"),
                   uiOutput("Dmd2"),
                   uiOutput("LT2")
@@ -39,18 +54,45 @@ dashboardPage(
              ),
           div(id = "plot3Box",
               box(title = "Plot 3 Parameters", width = 4,
-                  uiOutput("ROP3"),
+                  uiOutput("SL3"),
                   uiOutput("EOQ3"),
                   uiOutput("Dmd3"),
                   uiOutput("LT3")
                   )
               )
-        )
         ),
-    div(id = "PPV",
+        fluidRow(
+          div(id = "FR1",
+              box(title = "Fill Rate Projection", width = 4,
+                  numericInput("enterFR1Sigma", label = "Lead Time Demand Standard Deviation",
+                               min = 0, max = Inf, step = NA, value = 0),
+                  h3("Fill Rate Estimate"),
+                  textOutput("FR1")
+                  )
+              ),
+          div(id = "FR2",
+              box(title = "Fill Rate Projection", width = 4,
+                  numericInput("enterFR2Sigma", label = "Lead Time Demand Standard Deviation",
+                               min = 0, max = Inf, step = NA, value = 0),
+                  h3("Fill Rate Estimate"),
+                  textOutput("FR2")
+                  )
+              ),
+          div(id = "FR3",
+              box(title = "Fill Rate Projection", width = 4,
+                  numericInput("enterFR3Sigma", label = "Lead Time Demand Standard Deviation",
+                               min = 0, max = Inf, step = NA, value = 0),
+                  h3("Fill Rate Estimate"),
+                  textOutput("FR3")
+                  )
+              )
+          )
+        ),
+    div(id = "PPV2",
         fluidRow(
           box(
             title = "PPV Mode", width = 12,
+            uiOutput("PPV_SL"),
             uiOutput("PPV_Demand"),
             uiOutput("PPV_CRR"),
             uiOutput("PPV_SR"),

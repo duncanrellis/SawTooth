@@ -7,9 +7,12 @@ Sets ROP to provide a zero safety level cycle
 PPV is the procurement problem variable, the average required to meet the demand over the net leadtime
 of an item with both a repairable pipeline (regenerative) and a procurement pipeline (attrition)}
 \usage{
-ppvDecom(Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2, Repair_period = 1)
+ppvDecom(SL = 0, Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2,
+  Repair_period = 1)
 }
 \arguments{
+\item{SL}{numeric, minimum stock level}
+
 \item{Demand}{numeric, quarterly demand forecast}
 
 \item{CRR}{numeric, proportion of items that are returned for repair}
@@ -23,8 +26,6 @@ ppvDecom(Demand, CRR, SR, PCLT, PRTAT, Cov_Dur = 2, Repair_period = 1)
 \item{Cov_Dur}{numeric, number of quarters of material to buy}
 
 \item{Repair_period}{number, number of quarters of material to repair}
-
-\item{CR}{numeric, proportion of items that are returned for repair}
 }
 \value{
 data.frame

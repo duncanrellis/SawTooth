@@ -1,5 +1,6 @@
 if (FALSE) {
 
+  devtools::load_all("~/Projects/SawTooth")
 
   plotST(SL = 0, EOQ = 100, Dmd = 150, LT = 1, plotLTs = TRUE)
   plotST(SL = c(0,1,0), EOQ = c(1,2,3), Dmd = c(2,2,2), LT = 2, plotLTs = TRUE)
@@ -15,19 +16,21 @@ if (FALSE) {
 
   plotST(SL = 0, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE, lSize = 1, axis_text = 12)
 
-  Demand = 4; CRR = .7; SR = .8; PCLT = 3; PRTAT = 1.5
-  plotST(ppvDecom(Demand = Demand, CRR = CRR, SR = SR, PCLT = PCLT, PRTAT = PRTAT))
+  Demand = 4; CRR = .7; SR = .8; PCLT = 3; Cov_Dur = 2; PRTAT = 9; Repair_period = 1;
 
-  devtools::load_all("~/Projects/SawTooth")
+  plotST(
+    ppvDecom(Demand = Demand, CRR = CRR, SR = SR, PCLT = PCLT, PRTAT = PRTAT)
+  )
+
   estimateFR(SL = 15, EOQ = 107, Dmd = 139.277, LT = 1, LT_sigma = 52.65,  Dmd_sigma = 1)
 
 }
 ##' Using approach in Silver, et all, estimate fill rate of CR system
 ##' \eqn{1-f =  \frac{1}{Q} \int_{s^{'}}^{\infty} (x - s^{'}) f_{X^{'}}  {dx}}
 ##
-##'   
+##'
 ##' @param EOQ numeric, er quantity
-##' @param Dmd numeric, quarterly demanad forecast
+##' @param Dmd numeric, quarterly demand forecast
 ##' @param LT numeric, lead time
 ##' @param ... numeric, additional variance params for LT and Dmd.  Either LTD_sigma or both LT_sigma and Dmd_sigma must be supplied.
 ##' @param SL either data.frame containing SL, EOQ, Dmd, LT, and variance measure, or numeric SL minimum
@@ -36,26 +39,25 @@ if (FALSE) {
 estimateFR <- function(SL, EOQ, Dmd, LT, ...) {
 
   dots <- list(...)
-  
-  if (!xor(sum(c("LT_sigma", "Dmd_sigma") %in% names(dots)) == 2,
-           c("LTD_sigma") %in% names(dots))) {
-    stop("Must supply EITHER LT_sigma and Dmd_sigma OR LTD_sigma", call. = TRUE)
-  }
-  LTD_sigma <- do.call("sum", dots)
-  
+
   if (is.data.frame(SL)) {
     paramDb <- SL
     if (!xor(sum(c("LT", "Dmd_sigma") %in% names(SL)) == 2,
         c("LTD_sigma") %in% names(SL)) ||
         !sum(c("SL", "EOQ", "Dmd", "LT") %in% names(paramDb)) == 4) {
-      error("data.frame does not contain correct columns", call. = TRUE)
+      stop("data.frame does not contain correct columns", call. = TRUE)
     }
   } else {
+    LTD_sigma <- do.call("sum", dots)
+    if (!xor(sum(c("LT_sigma", "Dmd_sigma") %in% names(dots)) == 2,
+             c("LTD_sigma") %in% names(dots))) {
+      stop("Must supply EITHER LT_sigma and Dmd_sigma OR LTD_sigma", call. = TRUE)
+    }
     paramDb <- getParamDb(SL, EOQ, Dmd, LT, catNames = letters[1:length(SL)])
+    paramDb$LTD_sigma <- LTD_sigma
+
   }
-  
   paramDb$LTD <- paramDb$Dmd * paramDb$LT
-  paramDb$LTD_sigma <- LTD_sigma
 
   ## Calculate the cycle numbers and additional parameters
   paramDb$cycleTime <- pmax(1, paramDb$LTD / paramDb$EOQ)
@@ -63,15 +65,15 @@ estimateFR <- function(SL, EOQ, Dmd, LT, ...) {
   paramDb$LTD_Var_Prime <- paramDb$LTD_sigma^2 / paramDb$cycleTime^2
   paramDb$ROP <- paramDb$LTD_Prime + paramDb$SL
   paramDb$si_prime <- paramDb$ROP - (paramDb$cycleTime - 1) * paramDb$EOQ
-  
+
   FRDb <- paramDb %>%
     group_by(Title) %>%
     do({
       .
 
       # func <- getFunc(.$LTD_Prime, .$LTD_Var_Prime)
-      ## Temp code
-      
+      ## Temp code, expand to consider additional distributions
+
       func <- function(x, mu = 1, var = 1) {
         1 / sqrt(2 * pi * var) * exp(-((x - mu)^2)/(2 * var))
       }
@@ -81,9 +83,8 @@ estimateFR <- function(SL, EOQ, Dmd, LT, ...) {
       fr <- 1 - integrate(expfunc, .$si_prime, Inf)$value / .$EOQ
       tibble(FR = fr)
     })
-  
-  return (FRDb)
 
+  return (FRDb)
 }
 
 #' Takes as input PPV parameters.  Returns a data.frame suitable for plotting with \code{\link{plotST}}
@@ -159,17 +160,17 @@ getParamDb <- function(SL = NULL, EOQ = NULL, Dmd = NULL, LT = NULL, catNames) {
 
 #' Produces a saw tooth continuous review inventory plot with user supplied parameters
 #'
-#' @param EOQ Item Order Quantity
-#' @param cycleLimits how many saw tooth cycles to draw
-#' @param xMax if provided provide explicit maximum for x-axis
-#' @param plotLTs if TRUE provide LT information
-#' @param ... additional parameters, for plot output
-#' @param catNames names for each sawtooth
-#' @param SL numeric, planned minimum safety level to honor or data.frame with at minimum 
+#' @param SL numeric, planned minimum safety level to honor or data.frame with at minimum
 #' EOQ, Sl, Dmd, and LT
+#' @param EOQ Item Order Quantity
 #' @param Dmd numeric, demand per unit time
 #' @param LT numeric, lead time
-#'
+#' @param cycleLimits how many saw tooth cycles to draw
+#' @param catNames names for each sawtooth
+#' @param xMax if provided provide explicit maximum for x-axis
+#' @param plotLTs if TRUE provide LT information
+#' @param FR logical, if TRUE, estimate Fill Rate
+#' @param ... additional parameters, for plot output
 #' @return gg
 #' @export
 #' @import ggplot2
@@ -192,7 +193,7 @@ getParamDb <- function(SL = NULL, EOQ = NULL, Dmd = NULL, LT = NULL, catNames) {
 #' }
 #'
 plotST <- function(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNames = NULL,
-                   xMax = NULL, plotLTs = FALSE, ...) {
+                   xMax = NULL, plotLTs = FALSE, FR = TRUE,  ...) {
 
   plotParams <- list(
     lSize = 1,
@@ -206,14 +207,14 @@ plotST <- function(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNa
     paramDb <- SL
     # Check for the right column names
     if (!sum(c("SL", "EOQ", "Dmd", "LT", "Title") %in% names(paramDb)) == 5) {
-      stop("Data.frame must contain columns 'SL', 'EOQ', 'Dmd', 'LT', and 'Title'", 
+      stop("Data.frame must contain columns 'SL', 'EOQ', 'Dmd', 'LT', and 'Title'",
            call. = TRUE)
     }
   } else {
   # Some data checks, build the paramDb if not supplied
     paramDb <- getParamDb(SL, EOQ, Dmd, LT, catNames)
   }
-  
+
   # Calculate some additional plot parameters
   paramDb$LTD <- paramDb$Dmd * paramDb$LT
   paramDb$cycleTime <- pmax(1, paramDb$LTD / paramDb$EOQ)
@@ -302,7 +303,7 @@ plotST <- function(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNa
 
   paramDb$MRP_RO <- ifelse(paramDb$cycleTime > 1,
                            paramDb$SL + paramDb$LTD_prime * paramDb$cycleTime %% 1, ## Time to back up in cycle for resupplyn
-                           paramDb$MRP_RO <-  paramDb$SL + paramDb$LTD_prime 
+                           paramDb$MRP_RO <-  paramDb$SL + paramDb$LTD_prime
                            )
 
   # add the rest of the elements
@@ -340,11 +341,11 @@ plotST <- function(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNa
     do({
       if (nrow(paramDb) > 1) {
         lab <- sprintf("Title: %s, Demand: %s, Lead Time: %s, EOQ: %s, ROP: %s, SL: %s, Overlapping Orders Required: %s",
-                       .$Title, round(.$Dmd,1), round(.$LT,1), round(.$EOQ,1), 
+                       .$Title, round(.$Dmd,1), round(.$LT,1), round(.$EOQ,1),
                        round(.$MRP_RO,1), round(.$SL,1), .$OverlapYesNo)
       } else {
         lab <- sprintf("Demand: %s, Lead Time: %s, EOQ: %s, ROP: %s, SL: %s, Overlapping Orders Required: %s",
-                       round(.$Dmd,1), round(.$LT,1), round(.$EOQ,1), round(.$MRP_RO,1), 
+                       round(.$Dmd,1), round(.$LT,1), round(.$EOQ,1), round(.$MRP_RO,1),
                        round(.$SL,1), .$OverlapYesNo)
       }
       tibble(lab = lab)
