@@ -74,9 +74,13 @@ estimateFR <- function(SL, EOQ, Dmd, LT, ...) {
       # func <- getFunc(.$LTD_Prime, .$LTD_Var_Prime)
       ## Temp code, expand to consider additional distributions
 
-      func <- function(x, mu = 1, var = 1) {
-        1 / sqrt(2 * pi * var) * exp(-((x - mu)^2)/(2 * var))
-      }
+      ## func <- function(x, mu = 1, var = 1) {
+      ##   1 / sqrt(2 * pi * var) * exp(-((x - mu)^2)/(2 * var))
+      ## }
+
+      func <- getFunc(.$LTD_Prime, .$LTD_Var_Prime)
+      if (is.null(func)) func <- gammaPDF
+
       expfunc <- function(x) {
         (x - .$si_prime) * func(x, mu = .$LTD_Prime, var = .$LTD_Var_Prime)
       }
