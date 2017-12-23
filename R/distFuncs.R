@@ -8,7 +8,10 @@
 ##' @keywords internal
 ##' @md
 normalPDF <- function(x, mu = 1, var = 1) {
-  1 / sqrt(2 * pi * var) * exp(-((x - mu)^2)/(2 * var))
+  pdf <- 1 / sqrt(2 * pi * var) * exp(-((x - mu)^2)/(2 * var))
+  attr(pdf, "dist") <- "normalPDF"
+
+  return (pdf)
 }
 ##' Problem mass function for poisson distribution
 ##'
@@ -22,7 +25,10 @@ normalPDF <- function(x, mu = 1, var = 1) {
 poissonPDF <- function(x, mu, var) {
 
   lamdba <- mu
-  dpois(x, lamdba = lambda)
+  pdf <- dpois(x, lamdba = lambda)
+  attr(pdf, "dist") <- "poissonPDF"
+
+  return (pdf)
 }
 ##' Probability mass function for negative binomial distribution
 ##'
@@ -40,7 +46,10 @@ negBinPDF <- function(x, mu, var) {
   ## return NULL and allow calling function to pick a more suitable distribution
   if (r < 1) return (NULL)
 
-  RMKdiscrete::binegbin(x, r, p)
+  pdf <- RMKdiscrete::binegbin(x, r, p)
+  attr(pdf, "dist") <- "negBinPDF"
+
+  return (pdf)
 }
 ##' Probability mass function for binomial distribution
 ##'
@@ -57,10 +66,12 @@ binPDF <- function(x, mu, var) {
   p <- mu / n
 
   ## If adjustment to binPDF n is too large, don't accept
-  if (abs(n - n0)/n0) > .25) return (NULL)
+  if (abs((n - n0)/n0) > .25) return (NULL)
 
-  dbinom(x, n, p)
+  pdf <- dbinom(x, n, p)
+  attr(pdf, "dist") <- "binPDF"
 
+  return (pdf)
 }
 ##' Probability mass function for gamma distribution
 ##'
@@ -75,7 +86,10 @@ gammaPDF <- function(x, mu, var) {
   k = mu^2 / var
   theta = var / mu
 
-  dgamma(x, shape = k, scale = theta)
+  pdf <- dgamma(x, shape = k, scale = theta)
+  attr(pdf, "dist") <- "gammaPDF"
+
+  return (pdf)
 }
 ##' Deterministic probability function
 ##'
@@ -87,7 +101,11 @@ gammaPDF <- function(x, mu, var) {
 ##' @keywords internal
 ##' @md
 detPDF <- function(x, mu, var) {
-  return(mu)
+
+  pdf <- mu
+  attr(pdf, "dist") <- "detPDF"
+
+  return (pdf)
 }
 ##' Returns appropriate probability distribution for [estimateFR()]
 ##'
@@ -100,23 +118,38 @@ detPDF <- function(x, mu, var) {
 getFunc <- function(mu, var) {
 
   if (sqrt(var) / mu < .01) {
-    return (detPDF)
+    pdf <- detPDF
+    attr(pdf, "dist") <- "detPDF"
+
+    return (pdf)
   } else if (mu >= 20) {
     if (sqrt(var) / mu < 2.325) {
-      return (normalPDF)
+      pdf <- normalPDF
+      attr(pdf, "dist") <- "normalPDF"
+      return (pdf)
     } else {
-      return (gammaPDF)
+      pdf <- gammaPDF
+      attr(pdf, "dist") <- "gammaPDF"
+      return (pdf)
     }
   } else if (mu <= 20) {
     if (var >= .9 && var <= 1.1) {
-      return (poissonPDF)
+      pdf <- poissonPDF
+      attr(pdf, "dist") <- "poissonPDF"
+      return (pdf)
     } else if (var / mu > 1.1) {
-      return (negBinPDF)
+      pdf <- negBinPDF
+      attr(pdf, "dist") <- "negBinPDF"
+      return (pdf)
     }
   } else if (var / mu < .9) {
-    return (binPDF)
+    pdf <- binPDF
+    attr(pdf, "binPDF") <- "binPDF"
+    return (pdf)
   } else {
-    return (gammaPDF)
+    pdf <- gammaPDF
+    attr(pdf, "dist") <- "gammaPDF"
+    return (pdf)
   }
 }
 
