@@ -313,20 +313,32 @@ shinyServer(function(input, output, session) {
     if (length(values$plotList) > 0) {
       if (!input$enterPPV) {
         pltData <- suppressWarnings(do.call("bind_rows", values$plotList))
-        plotST(SL = pltData,
-               plotLTs = input$plotLT,
-               axis_text = textSize)
+        if (!any(is.na(pltData))) {
+          plotST(SL = pltData,
+                 plotLTs = input$plotLT,
+                 axis_text = textSize)
+        }
       } else {
-        plotST(ppvDecom(
-          SL = input$enterPPV_SL,
-          Demand = input$enterPPV_Demand,
-          CRR = input$enterPPV_CRR,
-          SR = input$enterPPV_SR,
-          PCLT = input$enterPPV_PCLT,
-          PRTAT = input$enterPPV_PRTAT,
-          Cov_Dur = input$enterPPV_Cov_Dur,
-          Repair_period = input$enterPPV_Repair_period),
-          axis_text = textSize)
+        ## Check and ensure none of the inputs are NA
+        if (!any(is.na(c(input$enterPPV_SL,
+                     input$enterPPV_Demand,
+                     input$enterPPV_CRR,
+                     input$enterPPV_SR,
+                     input$enterPPV_PCLT,
+                     input$enterPPV_PRTAT,
+                     input$enterPPV_Cov_Dur,
+                     input$enterPPV_Repair_period)))) {
+          plotST(ppvDecom(
+            SL = input$enterPPV_SL,
+            Demand = input$enterPPV_Demand,
+            CRR = input$enterPPV_CRR,
+            SR = input$enterPPV_SR,
+            PCLT = input$enterPPV_PCLT,
+            PRTAT = input$enterPPV_PRTAT,
+            Cov_Dur = input$enterPPV_Cov_Dur,
+            Repair_period = input$enterPPV_Repair_period),
+            axis_text = textSize)
+        }
       }
     }
     })

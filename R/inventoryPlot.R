@@ -1,7 +1,7 @@
 if (FALSE) {
 
   devtools::load_all("~/Projects/SawTooth")
-
+  plotST(SL = 0, EOQ = 0, Dmd = 150, LT = 1, plotLTs = TRUE)
   plotST(SL = 0, EOQ = 100, Dmd = 150, LT = 1, plotLTs = TRUE)
   plotST(SL = c(0,1,0), EOQ = c(1,2,3), Dmd = c(2,2,2), LT = 2, plotLTs = TRUE)
   plotST(SL = 4, EOQ = 1.5, Dmd = 1, LT = 2, xMax = 10, plotLTs = TRUE)
@@ -16,7 +16,7 @@ if (FALSE) {
 
   plotST(SL = 0, EOQ = 2, Dmd = 1, LT = 2, plotLTs = TRUE, lSize = 1, axis_text = 12)
 
-  Demand = 4; CRR = .7; SR = .8; PCLT = 3; Cov_Dur = 2; PRTAT = 9; Repair_period = 1;
+  Demand = 4; CRR = 0; SR = .8; PCLT = 3; Cov_Dur = 2; PRTAT = 9; Repair_period = 1;
 
   plotST(
     ppvDecom(Demand = Demand, CRR = CRR, SR = SR, PCLT = PCLT, PRTAT = PRTAT)
@@ -226,14 +226,20 @@ plotST <- function(SL, EOQ = NULL, Dmd = NULL, LT = NULL, cycleLimits = 2, catNa
   # If missing xMax compute based on number of desired cycles
   if (missing(xMax)) {
     tstep <- paramDb$EOQ/paramDb$Dmd
-    xMax <- max(tstep * cycleLimits)
+    xMax <- max(tstep * cycleLimits, na.rm = TRUE)
     xlims <- range(c(0, xMax) * 1.01)
   } else {
     xlims <- c(0, xMax)
   }
   ylims <- range(c(min(min(paramDb$minPoint), 0),
                    (paramDb$ROP - paramDb$LTD_prime + paramDb$EOQ) * 1.1))
+
+  if (!any(paramDb$EOQ > 0) || !any(paramDb$Dmd > 0)) {
+    stop("Demand and Order Quantity Must be Positive")
+  }
+
   pltDb <- paramDb %>%
+    filter(Dmd > 0) %>%
     group_by(Title) %>%
     do({
       lineSegs <- tibble(x1 = 0, y1 = .$maxPoint, x2 = .$LTD_prime, y2 = .$minPoint)[-1,]
