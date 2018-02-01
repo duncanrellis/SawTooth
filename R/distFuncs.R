@@ -57,7 +57,7 @@ binPDF <- function(x, mu, var) {
   p <- mu / n
 
   ## If adjustment to binPDF n is too large, don't accept
-  if (abs(n - n0)/n0) > .25) return (NULL)
+  if ((abs(n - n0)/n0) > .25) return (NULL)
 
   dbinom(x, n, p)
 
