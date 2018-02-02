@@ -179,6 +179,7 @@ getParamDb <- function(SL = NULL, EOQ = NULL, Dmd = NULL, LT = NULL, catNames) {
 #' @export
 #' @import ggplot2
 #' @import dplyr
+#' @import tidyr
 #' @importFrom scales comma
 #' @examples
 #' \dontrun{
